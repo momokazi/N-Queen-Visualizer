@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #chessboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 1px;
+            border: 1px solid #333;
+            background-color: #fff;
+            margin-top: 20px;
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #3498db;
+            opacity: 0.5;
+            transition: background-color 0.3s;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .queen {
+            color: #e74c3c;
+        }
+    </style>
+    <title>N-Queens Backtracking Visualizer</title>
+</head>
+<body>
+    <div id="chessboard"></div>
+
+    <script>
+        const N = 4;
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function printSolution(board) {
+            const chessboard = document.getElementById('chessboard');
+            chessboard.innerHTML = '';
+
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = board[i][j] === 1 ? 'Q' : '.';
+                    if (board[i][j] === 1) {
+                        cell.classList.add('queen');
+                    }
+                    chessboard.appendChild(cell);
+                    await sleep(500); // Adjust the delay as needed
+                }
+            }
+        }
+
+        function isSafe(board, row, col) {
+            for (let i = 0; i < col; i++) {
+                if (board[row][i] === 1) {
+                    return false;
+                }
+            }
+
+            for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+                if (board[i][j] === 1) {
+                    return false;
+                }
+            }
+
+            for (let i = row, j = col; j >= 0 && i < N; i++, j--) {
+                if (board[i][j] === 1) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        async function solveNQUtil(board, col) {
+            if (col >= N) {
+                return true;
+            }
+
+            for (let i = 0; i < N; i++) {
+                if (isSafe(board, i, col)) {
+                    board[i][col] = 1;
+
+                    if (await solveNQUtil(board, col + 1)) {
+                        await printSolution(board.slice()); // Pass a copy of the board
+                        return true;
+                    }
+
+                    board[i][col] = 0;
+                }
+            }
+
+            return false;
+        }
+
+        async function solveNQ() {
+            let board = Array.from({ length: N }, () => Array(N).fill(0));
+
+            if (!(await solveNQUtil(board, 0))) {
+                console.log("Solution does not exist");
+                return false;
+            }
+
+            return true;
+        }
+
+        // Run the visualization
+        solveNQ();
+    </script>
+</body>
+</html>
